@@ -1,6 +1,30 @@
-version: '3'
+version: '3.8'
 
 services:
+
+  php:
+    container_name: php
+    build: ./.docker/php
+    working_dir: /var/www/html
+    volumes:
+      - '.:/var/www/html'
+    networks:
+      - default
+    depends_on:
+      - mysql
+      - redis
+
+  nginx:
+    image: nginx:1.19
+    ports:
+      - 80:80
+    networks:
+      - default
+    volumes:
+      - ./:/var/www/html:ro
+      - ./.docker/nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - php
 
   mysql:
     image: 'mysql:8.0'
@@ -14,6 +38,7 @@ services:
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
     volumes:
       - 'dbdata:/var/lib/mysql'
+      - ./.docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
     networks:
       - default
     healthcheck:
