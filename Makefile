@@ -1,17 +1,19 @@
 help:
-	@echo "  install                 Build project"
-	@echo "  run                 	 Run project (stop with CTRL/CMD+C)"
+	@echo "  install name=           Build project"
+	@echo "  stop                 	 Stop project"
 	@echo "  uninstall               Build all container and run (images, container, volumes...)"
-	@echo "  ssh                     Connect to the PHP container"
 
 install:
-	docker-compose up --build
+	docker-compose up -d
+	docker-compose run --rm api composer create-project --prefer-dist laravel/laravel tmp "8.*"
+	docker-compose run --rm api sh -c "mv -n tmp/.* ./ && mv tmp/* ./ && rm -Rf tmp"
+	touch ./src/api/.env
+	export name=${name}
+	envsubst < .env.sample > src/api/.env
 
-run:
-	docker-compose up
+
+stop:
+	docker-compose stop
 
 uninstall:
 	docker-compose down -v --rmi all --remove-orphans
-
-ssh:
-	docker exec -it php /bin/sh; exit
