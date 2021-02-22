@@ -2,29 +2,29 @@ version: '3.8'
 
 services:
 
-  php:
-    container_name: php
-    build: ./.docker/php
-    working_dir: /var/www/html
-    volumes:
-      - '.:/var/www/html'
-    networks:
-      - default
-    depends_on:
-      - mysql
-      - redis
-
   nginx:
-    image: nginx:1.19
+    image: nginx:1.19-alpine
     ports:
       - 80:80
     networks:
       - default
     volumes:
-      - ./:/var/www/html:ro
+      - ./src/api:/var/www/api:ro,delegated
       - ./.docker/nginx/conf.d:/etc/nginx/conf.d:ro
     depends_on:
-      - php
+      - api
+
+  api:
+    container_name: api
+    build: ./src/api
+    working_dir: /var/www/api
+    volumes:
+      - ./src/api:/var/www/api:delegated
+    networks:
+      - default
+    depends_on:
+      - mysql
+      - redis
 
   mysql:
     image: 'mysql:8.0'
@@ -37,7 +37,7 @@ services:
       MYSQL_PASSWORD: 'secret'
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
     volumes:
-      - 'dbdata:/var/lib/mysql'
+      - dbdata:/var/lib/mysql:delegated
       - ./.docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
     networks:
       - default
