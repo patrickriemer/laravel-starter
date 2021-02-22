@@ -19,10 +19,23 @@ services:
     healthcheck:
       test: ["CMD", "mysqladmin", "ping"]
 
+  redis:
+    image: 'redis:alpine'
+    ports:
+      - '6379:6379'
+    volumes:
+      - 'redisdata:/data'
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+
 networks:
   default:
     driver: bridge
 
 volumes:
   dbdata:
+    driver: local
+  redisdata:
     driver: local
